@@ -1,3 +1,13 @@
+export interface LocationPoint {
+  id: 'hyderabad' | 'usa' | 'australia' | 'emea';
+  name: string;
+  shortLabel: string;
+  coordinates: { x: number; y: number };
+  eraLabel: string;
+  headline: string;
+  details: string;
+}
+
 export interface JourneyMilestone {
   id: string;
   role: string;
@@ -10,9 +20,8 @@ export interface JourneyMilestone {
   description: string;
   highlights: string[];
   stack: string[];
-  mapPosition: { x: number; y: number };
-  secondaryPins: { label: string; x: number; y: number }[];
-  captainNote: string;
+  eraMarkerPosition: { x: number; y: number };
+  locations: LocationPoint[];
 }
 
 export interface SkillItem {
@@ -48,33 +57,10 @@ export interface FeaturedProject {
   metrics: { label: string; value: string }[];
 }
 
-export interface ServiceOffering {
-  num: string;
-  category: string;
-  title: string;
-  description: string;
-  ctaLabel: string;
-  deliverables: string[];
-}
-
-export interface BlogArticle {
-  slug: string;
-  number: string;
-  date: string;
-  readTime: string;
-  title: string;
-  excerpt: string;
-  tags: string[];
-  sections: {
-    heading: string;
-    paragraphs: string[];
-  }[];
-}
-
 export const ASHOK_IMAGES = {
   avatar: '/src/assets/images/ashok-original.png',
-  pirateCaptain: '/src/assets/images/pirate_captain_guide_1791558093177.jpg',
-  treasureMap: '/src/assets/images/vintage_treasure_map_bg_1791558106012.jpg',
+  pirateCaptain: '/src/assets/images/pirate_captain_exact_closeup_1791562916506.jpg',
+  treasureMap: '/src/assets/images/clean_cartography_map_1791561042011.jpg',
 };
 
 export const PORTFOLIO_DATA = {
@@ -126,7 +112,7 @@ export const PORTFOLIO_DATA = {
       company: 'Anvesa',
       subtitle: 'Independent Entity · Enterprise AI eDiscovery Platform',
       period: '2024 – Present',
-      yearTag: '2024 – NOW',
+      yearTag: '2024 – PRESENT',
       location: 'Hyderabad, India',
       regions: 'US · India · Australia',
       description:
@@ -134,16 +120,41 @@ export const PORTFOLIO_DATA = {
       highlights: [
         'Architected document-type-aware RAG pipelines processing millions of legal depositions, contracts, and email threads.',
         'Engineered real-time ingestion on Azure Service Bus + Azure AI Search capable of indexing 60,000+ overnight documents by morning.',
-        'Established end-to-end LLM observability tracing retrieval chunks, similarity scores, and context windows in under 2 minutes.',
-        'Optimized embedding unit economics using Azure text-embedding-3-large with intelligent caching layers and off-peak batching.',
       ],
       stack: ['Azure AKS', 'Agentic AI', 'RAG Architecture', 'Azure OpenAI', 'Azure AI Search', 'Azure Service Bus'],
-      mapPosition: { x: 68.5, y: 47.5 }, // India (Hyderabad HQ)
-      secondaryPins: [
-        { label: 'US Clients', x: 23.5, y: 36.0 },
-        { label: 'Australia Clients', x: 82.0, y: 71.0 },
+      eraMarkerPosition: { x: 69.0, y: 46.0 },
+      locations: [
+        {
+          id: 'hyderabad',
+          name: 'Hyderabad, India (Anvesa HQ)',
+          shortLabel: 'Hyderabad, India',
+          coordinates: { x: 69.0, y: 46.0 },
+          eraLabel: '2024 – Present · Anvesa HQ',
+          headline: 'Head of Technology & Board Contributor — Hyderabad Practice',
+          details:
+            'Leading the entire engineering and AI architecture practice from Hyderabad — directing RAG pipelines, Agentic AI workflows, and Azure AKS infrastructure for 15+ global enterprise clients.',
+        },
+        {
+          id: 'usa',
+          name: 'United States (Enterprise Legal & eDiscovery Clients)',
+          shortLabel: 'United States',
+          coordinates: { x: 21.0, y: 34.0 },
+          eraLabel: '2024 – Present · US Production Fleet',
+          headline: 'US Enterprise eDiscovery & Production RAG Workloads',
+          details:
+            'Serving major US enterprise and legal clients daily on Anvesa — processing millions of depositions, contracts, and email threads with Azure OpenAI and Azure AI Search.',
+        },
+        {
+          id: 'australia',
+          name: 'Australia (APAC Enterprise Clients)',
+          shortLabel: 'Australia',
+          coordinates: { x: 83.0, y: 71.0 },
+          eraLabel: '2024 – Present · Australia Region',
+          headline: 'Australia Enterprise AI & eDiscovery Deployments',
+          details:
+            'Delivering production AI-native eDiscovery, multi-tenant Azure AKS clusters, and high-volume overnight document ingestion for enterprise clients across Australia.',
+        },
       ],
-      captainNote: 'Current Flagship Command: Steering Anvesa across 3 continents with 15+ enterprise fleets running daily AI workloads!',
     },
     {
       id: 'aureus-happiest-minds',
@@ -153,21 +164,37 @@ export const PORTFOLIO_DATA = {
       period: '2017 – 2024',
       yearTag: '2017 – 2024',
       location: 'Hyderabad, India',
-      regions: 'Global Enterprise Delivery',
+      regions: 'India · United States',
       description:
         'Joined as founding engineer on what became Anvesa. Built the platform from scratch across the full stack. Grew into leading the entire engineering function — architecture, R&D, QA, and production support. Led platform through the Aureus → Happiest Minds acquisition.',
       highlights: [
         'Built the core eDiscovery platform from line one across .NET Core, Angular, SQL Server, and Kubernetes.',
-        'Scaled engineering organization across architecture, R&D, quality assurance, and 24/7 enterprise production support.',
-        'Successfully led technical due diligence, platform continuity, and integration through the Happiest Minds acquisition.',
-        'Pioneered cloud-native containerization with Docker, Kubernetes (AKS), and Bicep Infrastructure-as-Code.',
+        'Led architecture, R&D, QA, and production support through the Aureus → Happiest Minds acquisition.',
       ],
       stack: ['.NET Core / C#', 'Angular', 'Kubernetes (AKS)', 'Docker', 'Bicep IaC', 'SQL Server'],
-      mapPosition: { x: 67.0, y: 45.0 },
-      secondaryPins: [
-        { label: 'US Legal Tech', x: 25.0, y: 38.0 },
+      eraMarkerPosition: { x: 69.0, y: 46.0 },
+      locations: [
+        {
+          id: 'hyderabad',
+          name: 'Hyderabad, India (Aureus → Happiest Minds)',
+          shortLabel: 'Hyderabad, India',
+          coordinates: { x: 69.0, y: 46.0 },
+          eraLabel: '2017 – 2024 · Founding Engineer to Head of Tech',
+          headline: 'Zero-to-One Platform Build & Acquisition Leadership',
+          details:
+            'Joined as founding engineer in Hyderabad and built the platform ground-up across .NET Core, Angular, SQL Server, and Kubernetes, guiding the engineering organization through the Happiest Minds acquisition.',
+        },
+        {
+          id: 'usa',
+          name: 'United States (Enterprise Rollouts)',
+          shortLabel: 'United States',
+          coordinates: { x: 21.0, y: 34.0 },
+          eraLabel: '2017 – 2024 · US Client Adoption',
+          headline: 'Scaling Cloud-Native eDiscovery for US Enterprises',
+          details:
+            'Architected containerized Docker & Azure AKS deployments and Bicep IaC provisioning to onboard and scale enterprise legal clients in the United States.',
+        },
       ],
-      captainNote: 'Seven-Year Voyage: Forged the platform from a blank chart into an acquisition-proven enterprise vessel!',
     },
     {
       id: 'cognizant-amex',
@@ -176,24 +203,58 @@ export const PORTFOLIO_DATA = {
       subtitle: 'American Express · Global Decision Engine',
       period: '2014 – 2017',
       yearTag: '2014 – 2017',
-      location: 'Hyderabad, India · Global Delivery',
+      location: 'Hyderabad, India',
       regions: 'US · EMEA · APAC',
       description:
         "Started career as Batch Topper at Cognizant's Learning Academy. Worked on the American Express Global Decision Engine — led Mainframe-to-.NET migration delivering change requests across US, EMEA, APAC and other global markets. Awarded for delivery quality.",
       highlights: [
-        "Graduated as Batch Topper at Cognizant's Learning Academy with top honors in software engineering.",
-        'Engineered critical modules for the American Express Global Decision Engine serving international credit & risk workflows.',
-        'Led Mainframe-to-.NET migration initiatives across US, EMEA, and APAC markets with zero production disruption.',
-        'Recognized with Delivery Excellence Awards for code reliability and cross-market execution.',
+        "Graduated as Batch Topper at Cognizant's Learning Academy and received Delivery Excellence Awards.",
+        'Led Mainframe-to-.NET migration for the American Express Global Decision Engine across US, EMEA, and APAC.',
       ],
       stack: ['.NET / C#', 'SQL Server', 'Enterprise Architecture', 'Mainframe Migration', 'Global Decision Engine'],
-      mapPosition: { x: 54.5, y: 31.5 }, // Europe / EMEA + Global route
-      secondaryPins: [
-        { label: 'AmEx US', x: 22.0, y: 34.0 },
-        { label: 'Hyderabad Academy', x: 68.5, y: 47.5 },
-        { label: 'APAC Markets', x: 78.0, y: 52.0 },
+      eraMarkerPosition: { x: 49.0, y: 27.0 },
+      locations: [
+        {
+          id: 'hyderabad',
+          name: 'Hyderabad, India (Cognizant Academy Topper)',
+          shortLabel: 'Hyderabad, India',
+          coordinates: { x: 69.0, y: 46.0 },
+          eraLabel: '2014 – 2017 · Cognizant Learning Academy',
+          headline: 'Batch Topper & American Express Engineering Delivery',
+          details:
+            "Started career as Batch Topper at Cognizant's Learning Academy in Hyderabad. Engineered mission-critical Mainframe-to-.NET migrations and was awarded for delivery quality.",
+        },
+        {
+          id: 'usa',
+          name: 'United States (American Express Global Decision Engine)',
+          shortLabel: 'United States (AmEx)',
+          coordinates: { x: 21.0, y: 34.0 },
+          eraLabel: '2014 – 2017 · US Financial Markets',
+          headline: 'American Express Global Decision Engine — US Market',
+          details:
+            'Led Mainframe-to-.NET migration and delivered high-reliability credit & risk decisioning change requests for American Express in the United States.',
+        },
+        {
+          id: 'emea',
+          name: 'Europe (EMEA Financial Markets)',
+          shortLabel: 'Europe (EMEA)',
+          coordinates: { x: 49.0, y: 27.0 },
+          eraLabel: '2014 – 2017 · EMEA Markets',
+          headline: 'Global Decision Engine Delivery — Europe / EMEA',
+          details:
+            'Delivered cross-market decisioning rules and .NET migration releases across European (EMEA) regulatory markets for American Express.',
+        },
+        {
+          id: 'australia',
+          name: 'Australia & APAC Markets (AmEx Decision Engine)',
+          shortLabel: 'Australia & APAC',
+          coordinates: { x: 83.0, y: 71.0 },
+          eraLabel: '2014 – 2017 · Australia & APAC Markets',
+          headline: 'Global Decision Engine Delivery — Australia & APAC',
+          details:
+            'Executed production change requests and Mainframe-to-.NET modernization across Australian and Asia-Pacific financial markets for American Express.',
+        },
       ],
-      captainNote: 'First Expedition: Top of the Academy class, charting global routes across US, Europe, and APAC for American Express!',
     },
   ] as JourneyMilestone[],
   skillCategories: [
@@ -264,7 +325,7 @@ export const PORTFOLIO_DATA = {
         {
           name: 'Docker & Kubernetes',
           category: 'Cloud & Infrastructure',
-          productionNote: 'Containerized microservice workloads, auto-scaling worker pools, and production helm/deployment pipelines.',
+          productionNote: 'Containerized microservice workloads, auto-scaling worker pools, and production deployment pipelines.',
           experienceYears: '7+ yrs',
         },
         {
@@ -514,107 +575,6 @@ export const PORTFOLIO_DATA = {
       ],
     },
   ] as FeaturedProject[],
-  services: [
-    {
-      num: '01',
-      category: 'Architecture & Build',
-      title: 'AI systems, designed and shipped to production.',
-      description:
-        'Design and build production-grade RAG pipelines, Agentic AI workflows, and LLM-powered enterprise applications on Azure. From architecture to deployment — the whole stack, hand-led.',
-      ctaLabel: 'Discuss a project',
-      deliverables: [
-        'Document-type-aware RAG & hybrid vector search on Azure',
-        'Multi-agent workflows with deterministic guardrails',
-        'AKS cloud-native backend & Bicep IaC provisioning',
-      ],
-    },
-    {
-      num: '02',
-      category: 'Audit & Improvement',
-      title: 'Already-running systems, made faster, cheaper, more reliable.',
-      description:
-        'Audit, optimize, and scale existing AI infrastructure. Performance bottlenecks. Cost overruns. Reliability gaps. Brought from "works in demo" to "holds up under enterprise load."',
-      ctaLabel: 'Request an audit',
-      deliverables: [
-        'Retrieval vs. generation root-cause telemetry audit',
-        'Embedding & inference unit-economics cost reduction',
-        'Ingestion queue resiliency & dead-letter observability',
-      ],
-    },
-    {
-      num: '03',
-      category: 'Advisory',
-      title: 'Strategic counsel for technology leaders.',
-      description:
-        'For CTOs and engineering leaders adopting enterprise AI — architecture reviews, team guidance, and roadmap planning. Pragmatic, board-aware, grounded in production reality.',
-      ctaLabel: 'Begin a conversation',
-      deliverables: [
-        'Executive & board-level AI roadmap & build-vs-buy strategy',
-        'Architecture reviews & engineering org scaling guidance',
-        'Vendor, model, and cloud commit evaluation',
-      ],
-    },
-  ] as ServiceOffering[],
-  blogArticle: {
-    slug: 'rag-in-production',
-    number: '№ 01',
-    date: 'March 31, 2026',
-    readTime: '5 min read',
-    title: 'What Nobody Tells You About Building RAG Systems in Production',
-    excerpt:
-      'Real lessons from shipping a RAG pipeline for enterprise eDiscovery — what the tutorials skip over.',
-    tags: ['RAG', 'AI', 'Azure', 'Production', 'eDiscovery'],
-    sections: [
-      {
-        heading: 'Introduction',
-        paragraphs: [
-          "Everybody's building RAG systems right now. Most of them work great in demos.",
-          "Here's what the tutorials don't cover — from someone who's been running one in production for enterprise eDiscovery clients across three countries.",
-        ],
-      },
-      {
-        heading: '1. Chunking Is Everything, and Nobody Gets It Right the First Time',
-        paragraphs: [
-          'The first version of our chunking strategy was logical: fixed-size chunks, 500 tokens, 100-token overlap. Clean. Predictable. Wrong.',
-          "In eDiscovery, documents aren't blog posts. You're processing contracts, depositions, emails, spreadsheets — sometimes all in the same case. A deposition transcript has a rhythm to it. Q&A pairs lose all meaning when you split them down the middle. An email thread makes no sense if you separate the header from the body.",
-          'We spent two months getting chunking right. The result was document-type-aware logic that handles PDFs, Word docs, emails, and spreadsheets differently. For legal depositions, we chunk by speaker turn. For contracts, by clause and sub-clause. For emails, we keep the thread header with every reply chunk.',
-          'The difference in retrieval quality was not incremental. It was dramatic.',
-        ],
-      },
-      {
-        heading: '2. Retrieval Quality and Generation Quality Are Completely Separate Problems',
-        paragraphs: [
-          'When the system gives a bad answer, the instinct is to blame the LLM. In my experience, 70% of the time the problem is retrieval, not generation.',
-          'Wrong chunks → wrong context → wrong answer. The LLM is just doing its job.',
-          "We now instrument every RAG call end-to-end: what query came in, which chunks were retrieved, what similarity scores they carried, what the model actually saw in its context window. When something goes wrong in production, I can trace the failure in under two minutes. If you're not doing this, you're debugging blind in the dark.",
-        ],
-      },
-      {
-        heading: '3. Cost at Scale Is Not an Afterthought',
-        paragraphs: [
-          "Embedding four million documents with a commercial API costs real money. Then there's retrieval cost, LLM inference cost, and — the one people forget — reprocessing cost when you change your chunking strategy (and you will change it).",
-          "We moved our embedding workload to Azure's text-embedding-3-large early and built a caching layer on top of it. Batch processing runs during off-peak hours. Index rebuilds are scheduled events, not on-demand emergencies.",
-          'Model the costs before you ship. "We\'ll optimize later" is how you end up in an uncomfortable call with a client about an unexpected bill.',
-        ],
-      },
-      {
-        heading: '4. Index Freshness Is an Ops Problem, Not a Dev Problem',
-        paragraphs: [
-          'In eDiscovery, documents arrive continuously. A new set of 60,000 emails might drop overnight. The system needs those indexed and searchable by morning.',
-          'We built our ingestion pipeline on Azure Service Bus — new documents trigger chunking and embedding jobs, which feed into Azure AI Search in near real-time. Queue depth, processing latency, and failure rates are all monitored. When the ingestion pipeline backs up at 2am, someone knows before the client does.',
-          "The mistake I see most often: engineering teams build a beautiful RAG system with zero plan for keeping the index current. That's not a RAG system. That's a snapshot.",
-        ],
-      },
-      {
-        heading: '5. The Part Nobody Puts in the Tutorial',
-        paragraphs: [
-          "RAG is not a library you install. It's a system — made of chunking logic, embedding models, retrieval infrastructure, prompt design, and observability that holds it together in production.",
-          "Get each layer right independently. Instrument everything. Design for the failure modes you haven't encountered yet — because you will encounter them.",
-          "That's what it takes to ship something that actually works when a client's legal team is relying on it.",
-        ],
-      },
-    ],
-  } as BlogArticle,
   credentials: [
     {
       title: 'Batch Topper — Cognizant Learning Academy',
@@ -641,46 +601,3 @@ export const PORTFOLIO_DATA = {
     { label: 'Hindi (Professional Working Proficiency)', percent: 90 },
   ],
 };
-
-export function generateStandaloneHtml(data = PORTFOLIO_DATA): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${data.name} — ${data.roleTitle}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #FFFDF7; color: #18181b; }
-    h1, h2, h3 { font-family: 'Bricolage Grotesque', sans-serif; }
-  </style>
-</head>
-<body class="p-6 md:p-12 max-w-6xl mx-auto">
-  <header class="bg-[#FDE047] border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] p-6 mb-10 flex flex-wrap justify-between items-center gap-4">
-    <div class="text-xl font-extrabold tracking-tight">${data.monogram} · ${data.name}</div>
-    <a href="mailto:${data.email}" class="bg-[#67E8F9] border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-4 py-2 font-bold text-sm">Get in Touch (${data.email})</a>
-  </header>
-  <section class="bg-white border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8 mb-10">
-    <p class="text-teal-600 font-bold mb-2">Hi there! 👋</p>
-    <h1 class="text-4xl md:text-6xl font-extrabold mb-4">${data.heroHeadline}</h1>
-    <p class="text-lg text-zinc-700 leading-relaxed mb-6">${data.heroLead}</p>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t-2 border-zinc-900">
-      ${data.kpis.map((k) => `<div><div class="text-3xl font-extrabold">${k.value}</div><div class="text-sm text-zinc-600">${k.label}</div></div>`).join('')}
-    </div>
-  </section>
-  <section class="bg-white border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8 mb-10">
-    <h2 class="inline-block bg-[#FDE047] border-2 border-zinc-900 px-4 py-1 text-2xl font-extrabold mb-6">Career Journey</h2>
-    <div class="space-y-6">
-      ${data.journey.map((j) => `<div class="border-2 border-zinc-900 p-5 bg-[#FFFDF7]"><div class="font-bold text-lg">${j.role} @ ${j.company}</div><div class="text-sm text-zinc-600 mb-2">${j.period} · ${j.location}</div><p class="text-zinc-800">${j.description}</p></div>`).join('')}
-    </div>
-  </section>
-  <section class="bg-white border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8">
-    <h2 class="inline-block bg-[#FDE047] border-2 border-zinc-900 px-4 py-1 text-2xl font-extrabold mb-4">Correspondence</h2>
-    <p class="mb-2"><strong>Email:</strong> <a href="mailto:${data.email}" class="underline">${data.email}</a></p>
-    <p class="mb-2"><strong>LinkedIn:</strong> <a href="${data.linkedin}" class="underline">${data.linkedin}</a></p>
-    <p><strong>Location:</strong> ${data.location}</p>
-  </section>
-</body>
-</html>`;
-}

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Linkedin,
   Mail,
   ArrowUp,
+  ArrowDown,
   Sun,
   Moon,
   Coffee,
@@ -16,7 +18,6 @@ import {
   CheckCircle2,
   X,
   Send,
-  Play,
   ExternalLink,
   MessageSquare,
 } from 'lucide-react';
@@ -28,18 +29,21 @@ import {
 } from './data/portfolioData';
 import { JourneyTreasureMap } from './components/JourneyTreasureMap';
 
+const SECTION_ORDER = ['home', 'about', 'journey', 'skills', 'work', 'contact'];
+
 export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(false);
-  const [activeSkillFilter, setActiveSkillFilter] = useState<string | null>(null);
+  const [activeSkillFilter, setActiveSkillFilter] = useState<string | null>(
+    null
+  );
   const [selectedSkillDetail, setSelectedSkillDetail] = useState<SkillItem>(
     PORTFOLIO_DATA.skillCategories[0].skills[0]
   );
-  const [selectedProject, setSelectedProject] = useState<FeaturedProject | null>(
-    null
-  );
-  const [isIntroPlaying, setIsIntroPlaying] = useState<boolean>(false);
+  const [selectedProject, setSelectedProject] =
+    useState<FeaturedProject | null>(null);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState<number>(0);
 
-  // Real Correspondence Form State wired to Ashok's Formspree endpoint (https://formspree.io/f/xlgonjal)
+  // Official Correspondence Form State for ashok@ashokkunchala.com
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -50,11 +54,71 @@ export default function App() {
     'idle' | 'sending' | 'sent' | 'error'
   >('idle');
 
-  const handlePlayIntro = () => {
-    setIsIntroPlaying(true);
-    setTimeout(() => {
-      setIsIntroPlaying(false);
-    }, 1500);
+  // Track active section index on scroll for the Up/Down navigation buttons
+  useEffect(() => {
+    const updateActiveSection = () => {
+      const scrollY =
+        window.pageYOffset ||
+        document.documentElement.scrollTop ||
+        document.body.scrollTop ||
+        0;
+
+      if (scrollY < 120) {
+        setCurrentSectionIndex(0);
+        return;
+      }
+
+      let foundIdx = 0;
+      SECTION_ORDER.forEach((id, idx) => {
+        const el = document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 260) {
+            foundIdx = idx;
+          }
+        }
+      });
+      setCurrentSectionIndex(foundIdx);
+    };
+
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    updateActiveSection();
+    return () => window.removeEventListener('scroll', updateActiveSection);
+  }, []);
+
+  // Universal smooth scroll function that works reliably in any window/iframe container
+  const scrollToSection = (targetId: string) => {
+    if (targetId === 'top' || targetId === 'home') {
+      const topEl = document.getElementById('home');
+      if (topEl) {
+        topEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+      document.body.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleScrollUp = () => {
+    if (currentSectionIndex <= 1) {
+      scrollToSection('top');
+    } else {
+      scrollToSection(SECTION_ORDER[currentSectionIndex - 1]);
+    }
+  };
+
+  const handleScrollDown = () => {
+    const nextIdx = Math.min(
+      SECTION_ORDER.length - 1,
+      currentSectionIndex + 1
+    );
+    scrollToSection(SECTION_ORDER[nextIdx]);
   };
 
   const handleContactChange = (
@@ -82,7 +146,14 @@ export default function App() {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify(contactForm),
+        body: JSON.stringify({
+          name: contactForm.name,
+          email: contactForm.email,
+          company: contactForm.company,
+          message: contactForm.message,
+          _replyto: contactForm.email,
+          _subject: `Correspondence for ${PORTFOLIO_DATA.email} from ${contactForm.name}`,
+        }),
       });
 
       if (response.ok) {
@@ -103,10 +174,7 @@ export default function App() {
         ? prev.message
         : `Hi Ashok, I'd like to discuss ${topicPrefix}. `,
     }));
-    const contactEl = document.getElementById('contact-form');
-    if (contactEl) {
-      contactEl.scrollIntoView({ behavior: 'smooth' });
-    }
+    scrollToSection('contact-form');
   };
 
   const getCategoryIcon = (
@@ -130,49 +198,16 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-150 ${
+      id="home"
+      className={`min-h-screen transition-colors duration-200 ${
         darkMode
           ? 'bg-[#181920] text-zinc-100'
           : 'bg-[#FFFDF7] text-zinc-900'
       }`}
     >
-      {/* Replayable AK Monogram Splash Overlay (Frame 00:00 of Video) */}
-      {isIntroPlaying && (
-        <div
-          onClick={() => setIsIntroPlaying(false)}
-          className="fixed inset-0 z-50 bg-[#FDE047] text-zinc-900 flex flex-col items-center justify-center p-6 cursor-pointer"
-        >
-          <div className="relative w-full max-w-2xl aspect-video border-4 border-zinc-900 bg-[#FFE156] shadow-[10px_10px_0px_0px_#18181b] flex flex-col items-center justify-center p-8">
-            <div className="absolute top-8 left-10 -rotate-12 bg-[#67E8F9] border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-3 py-1.5 font-mono font-bold text-sm">
-              &lt;/&gt;
-            </div>
-            <div className="absolute top-12 right-12 rotate-6 bg-[#F9A8D4] border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-3 py-1.5 font-mono font-bold text-sm">
-              RAG · AI
-            </div>
-            <div className="absolute bottom-10 left-16 rotate-6 bg-white border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-3 py-1.5 font-mono font-bold text-xs">
-              AKS
-            </div>
-
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#67E8F9] border-3 border-zinc-900 shadow-[5px_5px_0px_0px_#18181b] flex items-center justify-center font-display font-black text-4xl sm:text-5xl text-zinc-900">
-                A
-              </div>
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#F472B6] border-3 border-zinc-900 shadow-[5px_5px_0px_0px_#18181b] flex items-center justify-center font-display font-black text-4xl sm:text-5xl text-zinc-900">
-                K
-              </div>
-            </div>
-
-            <div className="w-56 h-3.5 bg-white border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] overflow-hidden">
-              <div className="h-full bg-[#67E8F9] w-full" />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* TOP BAR CONTRACT: Strictly 1 row, 3 zones separated by gap-8 (Matching Frame 00:01) */}
       <header
-        id="home"
-        className={`sticky top-0 z-40 border-b-2 border-zinc-900 px-4 sm:px-8 py-3.5 transition-colors duration-150 ${
+        className={`sticky top-0 z-40 border-b-2 border-zinc-900 px-4 sm:px-8 py-4 transition-colors duration-200 ${
           darkMode
             ? 'bg-[#1F212A] text-zinc-100'
             : 'bg-[#FDE047] text-zinc-900'
@@ -180,114 +215,119 @@ export default function App() {
       >
         <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-8">
           {/* Zone 1: Single text element wordmark */}
-          <a
-            href="#home"
-            className="px-3 py-1 bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] text-base sm:text-lg font-display font-extrabold tracking-tight whitespace-nowrap shrink-0"
+          <button
+            type="button"
+            onClick={() => scrollToSection('top')}
+            className="px-3.5 py-1 bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] text-base sm:text-lg font-display font-extrabold tracking-tight whitespace-nowrap shrink-0 cursor-pointer hover:-translate-y-0.5 transition-transform"
           >
             AK
-          </a>
+          </button>
 
-          {/* Zone 2: Concise single-line navigation links (Matching Video: Home, About, Journey, Skills, Work) */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-bold">
-            <a
-              href="#home"
-              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0"
+          {/* Zone 2: Concise single-line navigation links */}
+          <nav className="hidden md:flex items-center gap-8 text-sm font-bold">
+            <button
+              type="button"
+              onClick={() => scrollToSection('top')}
+              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
               Home
-            </a>
-            <a
-              href="#about"
-              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0"
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('about')}
+              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
               About
-            </a>
-            <a
-              href="#journey"
-              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0"
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('journey')}
+              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
               Journey
-            </a>
-            <a
-              href="#skills"
-              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0"
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('skills')}
+              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
               Skills
-            </a>
-            <a
-              href="#work"
-              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0"
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('work')}
+              className="hover:underline underline-offset-4 transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
               Work
-            </a>
+            </button>
           </nav>
 
           {/* Zone 3: 1 primary action */}
           <div className="flex items-center shrink-0">
-            <a
-              href="#contact"
-              className="px-4 py-2 text-xs sm:text-sm font-bold bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] hover:translate-x-[1px] hover:translate-y-[1px] transition-transform whitespace-nowrap shrink-0"
+            <button
+              type="button"
+              onClick={() => scrollToSection('contact')}
+              className="px-5 py-2 text-xs sm:text-sm font-bold bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] hover:translate-x-[1px] hover:translate-y-[1px] transition-transform whitespace-nowrap shrink-0 cursor-pointer"
             >
               Get in Touch
-            </a>
+            </button>
           </div>
         </div>
       </header>
 
       <main>
-        {/* HERO SECTION (Exact UI from Frames 00:01 - 00:04) */}
-        <section className="pt-8 pb-12 md:pt-12 md:pb-16 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto">
-          {/* 2-Column Hero Split */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            {/* Left Column: Kicker, Display Headline, Bio, Socials, Get in Touch & Coffee Chat */}
-            <div
-              className={`lg:col-span-7 border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-6 sm:p-10 flex flex-col justify-between ${
+        {/* HERO SECTION (Spacious Exact UI from Frames 00:01 - 00:04) */}
+        <section className="pt-10 pb-16 md:pt-16 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
+            {/* Left Column: Kicker, Display Headline, Bio, Official Links, Get in Touch & Coffee Chat */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`lg:col-span-7 border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-7 sm:p-12 flex flex-col justify-between ${
                 darkMode ? 'bg-[#1F212A]' : 'bg-white'
               }`}
             >
               <div>
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                  <p className="text-base sm:text-lg font-display font-bold text-teal-600 dark:text-teal-400">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <p className="text-lg sm:text-xl font-display font-bold text-teal-600 dark:text-teal-400">
                     Hi there! 👋
                   </p>
 
-                  {/* Theme & Splash Controls in Hero Workspace */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handlePlayIntro}
-                      className="px-3 py-1 text-xs font-bold bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[2px_2px_0px_0px_#18181b] inline-flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
-                    >
-                      <Play className="w-3 h-3" />
-                      Intro
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDarkMode((d) => !d)}
-                      aria-label="Toggle color theme"
-                      className={`p-1.5 border-2 border-zinc-900 shadow-[2px_2px_0px_0px_#18181b] cursor-pointer ${
-                        darkMode
-                          ? 'bg-[#FDE047] text-zinc-900'
-                          : 'bg-white text-zinc-900'
-                      }`}
-                    >
-                      {darkMode ? (
+                  {/* Light / Dark Theme Toggle (Matching Video 00:01 - 00:03) */}
+                  <button
+                    type="button"
+                    onClick={() => setDarkMode((d) => !d)}
+                    aria-label="Toggle color theme"
+                    className={`px-3.5 py-1.5 text-xs font-bold border-2 border-zinc-900 shadow-[2px_2px_0px_0px_#18181b] inline-flex items-center gap-1.5 cursor-pointer hover:-translate-y-0.5 transition-transform whitespace-nowrap shrink-0 ${
+                      darkMode
+                        ? 'bg-[#FDE047] text-zinc-900'
+                        : 'bg-[#FFFDF7] text-zinc-900'
+                    }`}
+                  >
+                    {darkMode ? (
+                      <>
                         <Sun className="w-4 h-4" />
-                      ) : (
+                        Light Mode
+                      </>
+                    ) : (
+                      <>
                         <Moon className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                        Dark Mode
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 <h1
-                  className="text-4xl sm:text-5xl lg:text-[3.5rem] font-display font-extrabold tracking-tight leading-[1.08] mb-5"
+                  className="text-4xl sm:text-5xl lg:text-[3.75rem] font-display font-extrabold tracking-tight leading-[1.06] mb-5"
                   style={{ textWrap: 'balance' }}
                 >
                   {PORTFOLIO_DATA.heroHeadline}
                 </h1>
 
                 <p
-                  className={`text-sm sm:text-base font-semibold mb-3 ${
+                  className={`text-sm sm:text-base font-semibold mb-4 ${
                     darkMode ? 'text-[#FDE047]' : 'text-zinc-800'
                   }`}
                 >
@@ -295,7 +335,7 @@ export default function App() {
                 </p>
 
                 <p
-                  className={`text-base sm:text-[17px] leading-relaxed max-w-[62ch] mb-8 ${
+                  className={`text-base sm:text-[17px] leading-[1.75] max-w-[62ch] mb-9 ${
                     darkMode ? 'text-zinc-300' : 'text-zinc-700'
                   }`}
                 >
@@ -304,15 +344,15 @@ export default function App() {
               </div>
 
               <div>
-                {/* Social Icon Square Buttons Row (Matching 00:01) */}
-                <div className="flex flex-wrap items-center gap-3 mb-6">
+                {/* Official Links from ashokkunchala.com (LinkedIn, Official Email, Direct Message) */}
+                <div className="flex flex-wrap items-center gap-3.5 mb-7">
                   <a
                     href={PORTFOLIO_DATA.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="LinkedIn Profile"
                     title="LinkedIn — linkedin.com/in/ashok-kumar-kunchala"
-                    className={`w-11 h-11 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] flex items-center justify-center hover:-translate-y-0.5 transition-transform ${
+                    className={`w-12 h-12 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] flex items-center justify-center hover:-translate-y-0.5 transition-transform ${
                       darkMode
                         ? 'bg-zinc-800 text-zinc-100 hover:bg-[#67E8F9] hover:text-zinc-900'
                         : 'bg-[#FFFDF7] text-zinc-900 hover:bg-[#67E8F9]'
@@ -325,7 +365,7 @@ export default function App() {
                     href={`mailto:${PORTFOLIO_DATA.email}`}
                     aria-label="Email Ashok Kunchala"
                     title={`Email — ${PORTFOLIO_DATA.email}`}
-                    className={`w-11 h-11 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] flex items-center justify-center hover:-translate-y-0.5 transition-transform ${
+                    className={`w-12 h-12 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] flex items-center justify-center hover:-translate-y-0.5 transition-transform ${
                       darkMode
                         ? 'bg-zinc-800 text-zinc-100 hover:bg-[#FDE047] hover:text-zinc-900'
                         : 'bg-[#FFFDF7] text-zinc-900 hover:bg-[#FDE047]'
@@ -334,28 +374,30 @@ export default function App() {
                     <Mail className="w-5 h-5" />
                   </a>
 
-                  <a
-                    href="#contact-form"
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection('contact-form')}
                     aria-label="Send Direct Correspondence"
                     title="Send Direct Message"
-                    className={`w-11 h-11 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] flex items-center justify-center hover:-translate-y-0.5 transition-transform ${
+                    className={`w-12 h-12 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] flex items-center justify-center hover:-translate-y-0.5 transition-transform cursor-pointer ${
                       darkMode
                         ? 'bg-zinc-800 text-zinc-100 hover:bg-[#F472B6] hover:text-zinc-900'
                         : 'bg-[#FFFDF7] text-zinc-900 hover:bg-[#F472B6]'
                     }`}
                   >
                     <MessageSquare className="w-5 h-5" />
-                  </a>
+                  </button>
                 </div>
 
-                {/* Primary CTA + "Buy me a coffee / Let's talk" with curved arrow (Exact match to 00:01 - 00:03) */}
+                {/* Primary CTA + "Buy me a coffee / Let's chat" with curved arrow (Exact match to 00:01 - 00:03) */}
                 <div className="flex flex-wrap items-center gap-6">
-                  <a
-                    href="#contact"
-                    className="px-6 py-3 text-sm sm:text-base font-display font-extrabold bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] hover:translate-x-[1px] hover:translate-y-[1px] transition-transform whitespace-nowrap shrink-0"
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection('contact')}
+                    className="px-7 py-3.5 text-sm sm:text-base font-display font-extrabold bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] hover:translate-x-[1px] hover:translate-y-[1px] transition-transform whitespace-nowrap shrink-0 cursor-pointer"
                   >
                     Get in Touch
-                  </a>
+                  </button>
 
                   <div className="flex items-center gap-3">
                     <span
@@ -363,7 +405,7 @@ export default function App() {
                         darkMode ? 'text-zinc-300' : 'text-zinc-700'
                       }`}
                     >
-                      Let&apos;s grab a coffee &amp; talk AI
+                      Buy me a coffee / Let&apos;s chat
                     </span>
                     <svg
                       width="38"
@@ -394,22 +436,25 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Right Column: Ashok's Uploaded Portrait AS-IS with Neo-Brutalist Stickers (Matching 00:01 - 00:03) */}
-            <div
-              className={`lg:col-span-5 border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-6 sm:p-8 flex flex-col items-center justify-between relative overflow-hidden ${
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.06 }}
+              className={`lg:col-span-5 border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-7 sm:p-10 flex flex-col items-center justify-between relative overflow-hidden ${
                 darkMode ? 'bg-[#1F212A]' : 'bg-[#F4FBF9]'
               }`}
             >
               {/* Floating Top-Left Sticker `</>` */}
-              <div className="self-start -rotate-6 bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-3 py-1.5 font-mono font-extrabold text-sm flex items-center gap-1.5 z-10">
+              <div className="self-start -rotate-6 bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-3.5 py-1.5 font-mono font-extrabold text-sm flex items-center gap-1.5 z-10">
                 <Code2 className="w-4 h-4" />
                 <span>&lt;/&gt;</span>
               </div>
 
               {/* Center Portrait Frame displaying Ashok's exact uploaded image as-is */}
-              <div className="relative my-3 w-full max-w-[290px]">
+              <div className="relative my-4 w-full max-w-[300px]">
                 <div className="w-full aspect-[2/3] border-4 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] overflow-hidden bg-[#5EEAD4]">
                   <img
                     src={ASHOK_IMAGES.avatar}
@@ -440,18 +485,22 @@ export default function App() {
               </div>
 
               {/* Bottom Mode Badge Button (Matching "Full Stack Mode" pill in 00:01) */}
-              <a
-                href="#work"
-                className="self-end mt-2 px-5 py-2 bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] font-display font-extrabold text-xs sm:text-sm hover:bg-[#FDE047] transition-colors whitespace-nowrap shrink-0"
+              <button
+                type="button"
+                onClick={() => scrollToSection('work')}
+                className="self-end mt-2 px-5 py-2 bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] font-display font-extrabold text-xs sm:text-sm hover:bg-[#FDE047] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
               >
-                Enterprise AI Mode
-              </a>
-            </div>
+                Full Stack &amp; AI Mode
+              </button>
+            </motion.div>
           </div>
 
           {/* Interactive Tech Stack Marquee Bar (Exact match to Frame 00:04) */}
-          <div
-            className={`mt-8 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] py-3.5 px-4 overflow-hidden ${
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.12 }}
+            className={`mt-10 border-2 border-zinc-900 shadow-[5px_5px_0px_0px_#18181b] py-4 px-5 overflow-hidden ${
               darkMode ? 'bg-[#1F212A]' : 'bg-white'
             }`}
           >
@@ -480,16 +529,20 @@ export default function App() {
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         </section>
 
-        {/* ABOUT SECTION (Exact UI from Frame 00:05 with Neo-Brutalist Inline Colored Highlights) */}
+        {/* ABOUT SECTION (Spacious Exact UI from Frame 00:05 with Neo-Brutalist Inline Colored Highlights) */}
         <section
           id="about"
-          className="py-12 md:py-20 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto"
+          className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto scroll-mt-20"
         >
-          <div
-            className={`relative border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-6 sm:p-12 ${
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.35 }}
+            className={`relative border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-8 sm:p-14 ${
               darkMode
                 ? 'bg-[#1F212A] text-zinc-100'
                 : 'bg-white text-zinc-900'
@@ -498,18 +551,18 @@ export default function App() {
             {/* Decorative Yellow Sticky Tape on Top-Right (Exact match to Frame 00:05) */}
             <div
               aria-hidden="true"
-              className="hidden sm:block absolute -top-3 right-10 w-28 h-7 bg-[#FEF08A] border-2 border-zinc-900 rotate-6 shadow-[2px_2px_0px_0px_#18181b]"
+              className="hidden sm:block absolute -top-3.5 right-12 w-32 h-8 bg-[#FEF08A] border-2 border-zinc-900 rotate-6 shadow-[2px_2px_0px_0px_#18181b]"
             />
 
             {/* ABOUT Title Box */}
-            <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] px-5 py-2 mb-8">
+            <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] px-6 py-2.5 mb-10">
               <h2 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight">
                 ABOUT
               </h2>
             </div>
 
             {/* Highlighted Narrative Paragraphs matching Frame 00:05 */}
-            <div className="space-y-6 text-base sm:text-lg leading-[1.85] max-w-[72ch]">
+            <div className="space-y-7 text-base sm:text-lg leading-[1.9] max-w-[74ch]">
               <p>
                 Highly experienced Technology Leader and Enterprise AI Architect with a rich professional background spanning over{' '}
                 <span className="bg-[#FDE047] text-zinc-900 px-2 py-0.5 font-bold border border-zinc-900">
@@ -568,10 +621,10 @@ export default function App() {
             </div>
 
             {/* 4 Key Metrics Strip at Bottom of About */}
-            <div className="mt-10 pt-6 border-t-2 border-zinc-900 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="mt-12 pt-8 border-t-2 border-zinc-900 grid grid-cols-2 sm:grid-cols-4 gap-6">
               {PORTFOLIO_DATA.kpis.map((kpi) => (
                 <div key={kpi.id}>
-                  <div className="text-2xl sm:text-3xl font-display font-extrabold tabular-nums">
+                  <div className="text-3xl sm:text-4xl font-display font-extrabold tabular-nums mb-1">
                     {kpi.value}
                   </div>
                   <div
@@ -584,7 +637,7 @@ export default function App() {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* MY JOURNEY — Interactive Treasure Map & Career Timeline (Frames 00:06 - 00:09) */}
@@ -594,13 +647,13 @@ export default function App() {
           activeSkillFilter={activeSkillFilter}
         />
 
-        {/* SKILLS SECTION (Exact UI from Frames 00:10 - 00:12) */}
+        {/* SKILLS SECTION (Spacious Exact UI from Frames 00:10 - 00:12) */}
         <section
           id="skills"
-          className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto"
+          className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto scroll-mt-20"
         >
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
-            <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] px-5 py-2">
+          <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
+            <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] px-6 py-2.5">
               <h2 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight">
                 SKILLS
               </h2>
@@ -609,7 +662,7 @@ export default function App() {
             {/* Active Skill Production Proof Inspector */}
             {selectedSkillDetail && (
               <div
-                className={`p-3.5 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] max-w-xl ${
+                className={`p-4 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] max-w-xl ${
                   darkMode
                     ? 'bg-zinc-800 text-zinc-100'
                     : 'bg-[#FEF9C3] text-zinc-900'
@@ -621,7 +674,7 @@ export default function App() {
                     {selectedSkillDetail.experienceYears}
                   </span>
                 </div>
-                <p className="text-xs leading-relaxed">
+                <p className="text-xs sm:text-sm leading-relaxed">
                   {selectedSkillDetail.productionNote}
                 </p>
               </div>
@@ -629,10 +682,14 @@ export default function App() {
           </div>
 
           {/* 3-Column Neo-Brutalist Category Cards Grid (Exact match to 00:10 - 00:12) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {PORTFOLIO_DATA.skillCategories.map((cat) => (
-              <div
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {PORTFOLIO_DATA.skillCategories.map((cat, idx) => (
+              <motion.div
                 key={cat.id}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.3, delay: idx * 0.05 }}
                 className={`border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] flex flex-col ${
                   darkMode ? 'bg-[#1F212A]' : 'bg-white'
                 }`}
@@ -646,7 +703,7 @@ export default function App() {
                   </h3>
                 </div>
 
-                <div className="p-5 grid grid-cols-2 gap-3 flex-1 content-start">
+                <div className="p-6 grid grid-cols-2 gap-3.5 flex-1 content-start">
                   {cat.skills.map((skill) => {
                     const isSelected =
                       selectedSkillDetail?.name === skill.name;
@@ -660,7 +717,7 @@ export default function App() {
                             prev === skill.name ? null : skill.name
                           );
                         }}
-                        className={`px-3 py-2.5 text-left text-xs font-bold border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] transition-transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-between gap-1.5 ${
+                        className={`px-3.5 py-2.5 text-left text-xs font-bold border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] transition-transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-between gap-1.5 ${
                           isSelected
                             ? 'bg-[#FDE047] text-zinc-900'
                             : darkMode
@@ -673,7 +730,7 @@ export default function App() {
                     );
                   })}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </section>
@@ -681,41 +738,48 @@ export default function App() {
         {/* CREATOR OF / FEATURED WORK SECTION (Exact UI from Frame 00:12 - 00:13) */}
         <section
           id="work"
-          className="py-12 md:py-20 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto"
+          className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto scroll-mt-20"
         >
-          <div
-            className={`border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-6 sm:p-10 ${
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.35 }}
+            className={`border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-8 sm:p-12 ${
               darkMode ? 'bg-[#1F212A]' : 'bg-white'
             }`}
           >
-            <div className="text-center max-w-2xl mx-auto mb-8">
+            <div className="text-center max-w-2xl mx-auto mb-10">
               <p
                 className={`text-sm font-medium mb-1 ${
                   darkMode ? 'text-zinc-400' : 'text-zinc-600'
                 }`}
               >
-                Architect &amp; Creator of
+                Creator &amp; Architect of
               </p>
+              <h2 className="text-2xl sm:text-3xl font-display font-extrabold">
+                Production AI Platforms &amp; Systems
+              </h2>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {PORTFOLIO_DATA.featuredProjects.map((proj) => (
                 <article
                   key={proj.id}
-                  className={`border-2 border-zinc-900 shadow-[5px_5px_0px_0px_#18181b] p-5 flex flex-col justify-between text-center ${
+                  className={`border-2 border-zinc-900 shadow-[5px_5px_0px_0px_#18181b] p-6 flex flex-col justify-between text-center hover:-translate-y-1 transition-transform ${
                     darkMode ? 'bg-zinc-800/90' : 'bg-[#FFFDF7]'
                   }`}
                 >
                   <div>
                     {/* Yellow Header Box like LazyFire / Hypergrep in 00:12 */}
-                    <div className="bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] p-4 mb-4">
+                    <div className="bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] p-4 mb-5">
                       <h3 className="font-display font-extrabold text-lg leading-snug">
                         {proj.title}
                       </h3>
                     </div>
 
                     <p
-                      className={`text-sm leading-relaxed mb-4 ${
+                      className={`text-sm leading-relaxed mb-5 ${
                         darkMode ? 'text-zinc-300' : 'text-zinc-700'
                       }`}
                     >
@@ -723,7 +787,7 @@ export default function App() {
                     </p>
 
                     <div
-                      className={`text-xs font-mono pb-4 mb-4 border-b border-dashed border-zinc-400 ${
+                      className={`text-xs font-mono pb-4 mb-5 border-b border-dashed border-zinc-400 ${
                         darkMode ? 'text-amber-300' : 'text-zinc-800'
                       }`}
                     >
@@ -734,7 +798,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setSelectedProject(proj)}
-                    className="w-fit mx-auto py-2 px-5 bg-white text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] font-display font-extrabold text-xs sm:text-sm inline-flex items-center justify-center gap-2 hover:bg-[#FDE047] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                    className="w-fit mx-auto py-2.5 px-6 bg-white text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] font-display font-extrabold text-xs sm:text-sm inline-flex items-center justify-center gap-2 hover:bg-[#FDE047] transition-colors cursor-pointer whitespace-nowrap shrink-0"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     Check it out
@@ -742,19 +806,23 @@ export default function App() {
                 </article>
               ))}
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* CREDENTIALS & LANGUAGES SPLIT (Exact UI from Frame 00:13) */}
-        <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
             {/* Left Card: CREDENTIALS & RECOGNITION */}
-            <div
-              className={`border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-6 sm:p-8 ${
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.35 }}
+              className={`border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-7 sm:p-10 ${
                 darkMode ? 'bg-[#1F212A]' : 'bg-white'
               }`}
             >
-              <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-4 py-1.5 mb-6">
+              <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-5 py-2 mb-7">
                 <h2 className="text-lg sm:text-xl font-display font-extrabold">
                   CREDENTIALS &amp; MILESTONES
                 </h2>
@@ -764,7 +832,7 @@ export default function App() {
                 {PORTFOLIO_DATA.credentials.map((cred) => (
                   <div
                     key={cred.title}
-                    className={`p-4 border-2 border-zinc-900 ${
+                    className={`p-5 border-2 border-zinc-900 ${
                       darkMode ? 'bg-zinc-800' : 'bg-[#FFFDF7]'
                     }`}
                   >
@@ -772,34 +840,38 @@ export default function App() {
                       {cred.title}
                     </h3>
                     <p
-                      className={`text-xs font-mono mb-2 ${
+                      className={`text-xs font-mono mb-2.5 ${
                         darkMode ? 'text-zinc-400' : 'text-zinc-600'
                       }`}
                     >
                       {cred.org}
                     </p>
                     <p
-                      className={`text-xs sm:text-sm leading-relaxed mb-3 ${
+                      className={`text-xs sm:text-sm leading-relaxed mb-3.5 ${
                         darkMode ? 'text-zinc-300' : 'text-zinc-700'
                       }`}
                     >
                       {cred.detail}
                     </p>
-                    <span className="inline-block bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[2px_2px_0px_0px_#18181b] px-2.5 py-0.5 text-xs font-mono font-bold tabular-nums">
+                    <span className="inline-block bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[2px_2px_0px_0px_#18181b] px-3 py-0.5 text-xs font-mono font-bold tabular-nums">
                       {cred.period}
                     </span>
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Right Card: LANGUAGES & GLOBAL DELIVERY (Matching Frame 00:13) */}
-            <div
-              className={`border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-6 sm:p-8 ${
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.35, delay: 0.08 }}
+              className={`border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-7 sm:p-10 ${
                 darkMode ? 'bg-[#1F212A]' : 'bg-white'
               }`}
             >
-              <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-4 py-1.5 mb-6">
+              <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] px-5 py-2 mb-7">
                 <h2 className="text-lg sm:text-xl font-display font-extrabold">
                   LANGUAGES &amp; GLOBAL MARKETS
                 </h2>
@@ -809,7 +881,7 @@ export default function App() {
                 {PORTFOLIO_DATA.spokenLanguages.map((lang) => (
                   <div
                     key={lang.label}
-                    className={`p-3.5 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] ${
+                    className={`p-4 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] ${
                       darkMode ? 'bg-zinc-800' : 'bg-[#FFFDF7]'
                     }`}
                   >
@@ -828,7 +900,7 @@ export default function App() {
                 {PORTFOLIO_DATA.globalReachBars.slice(0, 2).map((bar) => (
                   <div
                     key={bar.label}
-                    className={`p-3.5 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] ${
+                    className={`p-4 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] ${
                       darkMode ? 'bg-zinc-800' : 'bg-[#FFFDF7]'
                     }`}
                   >
@@ -844,29 +916,33 @@ export default function App() {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* GET IN TOUCH — Tilted Sticky Notes + Real Formspree Email Sender (Frame 00:14) */}
+        {/* GET IN TOUCH — Tilted Sticky Notes + Official Email Sender to ashok@ashokkunchala.com (Frame 00:14) */}
         <section
           id="contact"
-          className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto"
+          className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto scroll-mt-20"
         >
-          <div
-            className={`border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-6 sm:p-12 ${
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.35 }}
+            className={`border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-8 sm:p-14 ${
               darkMode ? 'bg-[#1F212A]' : 'bg-white'
             }`}
           >
             {/* GET IN TOUCH Yellow Badge */}
-            <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] px-5 py-2 mb-6">
+            <div className="inline-block bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] px-6 py-2.5 mb-8">
               <h2 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight">
                 GET IN TOUCH
               </h2>
             </div>
 
-            <div className="text-center max-w-xl mx-auto mb-12">
-              <h3 className="text-xl sm:text-2xl font-display font-extrabold mb-2">
+            <div className="text-center max-w-xl mx-auto mb-14">
+              <h3 className="text-2xl sm:text-3xl font-display font-extrabold mb-2">
                 Let&apos;s build something amazing together
               </h3>
               <p
@@ -878,14 +954,14 @@ export default function App() {
               </p>
             </div>
 
-            {/* 3 Tilted Sticky Note Cards with Top Tape (Exact match to Frame 00:14) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-14">
+            {/* 3 Tilted Sticky Note Cards with Top Tape (Only Official Channels from Original Website) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">
               {/* Sticky Note 1: Cyan LinkedIn */}
               <a
                 href={PORTFOLIO_DATA.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8 flex flex-col items-center justify-center text-center -rotate-2 hover:rotate-0 transition-transform"
+                className="relative bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8 flex flex-col items-center justify-center text-center -rotate-2 hover:rotate-0 hover:-translate-y-1 transition-all"
               >
                 <span
                   aria-hidden="true"
@@ -900,10 +976,10 @@ export default function App() {
                 </span>
               </a>
 
-              {/* Sticky Note 2: Yellow Direct Email */}
+              {/* Sticky Note 2: Yellow Official Email (ashok@ashokkunchala.com) */}
               <a
                 href={`mailto:${PORTFOLIO_DATA.email}`}
-                className="relative bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8 flex flex-col items-center justify-center text-center rotate-1 hover:rotate-0 transition-transform"
+                className="relative bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8 flex flex-col items-center justify-center text-center rotate-1 hover:rotate-0 hover:-translate-y-1 transition-all"
               >
                 <span
                   aria-hidden="true"
@@ -911,17 +987,18 @@ export default function App() {
                 />
                 <Mail className="w-8 h-8 mb-3" />
                 <span className="font-display font-extrabold text-base mb-1">
-                  Direct Email
+                  Official Email
                 </span>
                 <span className="text-xs font-mono">
                   {PORTFOLIO_DATA.email}
                 </span>
               </a>
 
-              {/* Sticky Note 3: Pink Send Message Scroll */}
-              <a
-                href="#contact-form"
-                className="relative bg-[#F472B6] text-zinc-900 border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8 flex flex-col items-center justify-center text-center -rotate-1 hover:rotate-0 transition-transform"
+              {/* Sticky Note 3: Pink Send Message Form */}
+              <button
+                type="button"
+                onClick={() => scrollToSection('contact-form')}
+                className="relative bg-[#F472B6] text-zinc-900 border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8 flex flex-col items-center justify-center text-center -rotate-1 hover:rotate-0 hover:-translate-y-1 transition-all cursor-pointer"
               >
                 <span
                   aria-hidden="true"
@@ -932,22 +1009,22 @@ export default function App() {
                   Send an Email
                 </span>
                 <span className="text-xs font-mono">
-                  Instant Message Form ↓
+                  {PORTFOLIO_DATA.email}
                 </span>
-              </a>
+              </button>
             </div>
 
-            {/* Real Working Email Form (Wired to https://formspree.io/f/xlgonjal) */}
+            {/* Official Correspondence Form (Sends directly to ashok@ashokkunchala.com) */}
             <div
               id="contact-form"
-              className={`max-w-3xl mx-auto border-2 border-zinc-900 shadow-[5px_5px_0px_0px_#18181b] p-6 sm:p-8 ${
+              className={`max-w-3xl mx-auto border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-7 sm:p-10 scroll-mt-24 ${
                 darkMode ? 'bg-zinc-800' : 'bg-[#FFFDF7]'
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2 mb-6 pb-4 border-b-2 border-zinc-900">
                 <div>
                   <h4 className="font-display font-extrabold text-lg">
-                    Send a Message Directly to Ashok
+                    Correspondence
                   </h4>
                   <p
                     className={`text-xs ${
@@ -958,13 +1035,11 @@ export default function App() {
                   </p>
                 </div>
                 <a
-                  href={PORTFOLIO_DATA.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-mono font-bold hover:underline inline-flex items-center gap-1"
+                  href={`mailto:${PORTFOLIO_DATA.email}`}
+                  className="text-xs font-mono font-bold hover:underline inline-flex items-center gap-1.5"
                 >
-                  <Linkedin className="w-3.5 h-3.5" />
-                  <span>{PORTFOLIO_DATA.linkedinDisplay}</span>
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>{PORTFOLIO_DATA.email}</span>
                 </a>
               </div>
 
@@ -975,7 +1050,7 @@ export default function App() {
                     <span>Received · Your message has arrived!</span>
                   </div>
                   <p className="text-sm mb-4">
-                    Thanks for reaching out. Your email has been sent directly to{' '}
+                    Thanks for reaching out. Your message has been sent directly to{' '}
                     <strong>{PORTFOLIO_DATA.email}</strong>. I&apos;ll get back to you within twenty-four hours, typically sooner.
                   </p>
                   <button
@@ -987,8 +1062,8 @@ export default function App() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <form onSubmit={handleContactSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label
                         htmlFor="name"
@@ -1004,7 +1079,7 @@ export default function App() {
                         value={contactForm.name}
                         onChange={handleContactChange}
                         placeholder="Your full name"
-                        className={`w-full px-3.5 py-2.5 text-sm border-2 border-zinc-900 ${
+                        className={`w-full px-4 py-3 text-sm border-2 border-zinc-900 ${
                           darkMode
                             ? 'bg-zinc-900 text-zinc-100'
                             : 'bg-white text-zinc-900'
@@ -1026,7 +1101,7 @@ export default function App() {
                         value={contactForm.email}
                         onChange={handleContactChange}
                         placeholder="you@company.com"
-                        className={`w-full px-3.5 py-2.5 text-sm border-2 border-zinc-900 ${
+                        className={`w-full px-4 py-3 text-sm border-2 border-zinc-900 ${
                           darkMode
                             ? 'bg-zinc-900 text-zinc-100'
                             : 'bg-white text-zinc-900'
@@ -1049,7 +1124,7 @@ export default function App() {
                       value={contactForm.company}
                       onChange={handleContactChange}
                       placeholder="Your company"
-                      className={`w-full px-3.5 py-2.5 text-sm border-2 border-zinc-900 ${
+                      className={`w-full px-4 py-3 text-sm border-2 border-zinc-900 ${
                         darkMode
                           ? 'bg-zinc-900 text-zinc-100'
                           : 'bg-white text-zinc-900'
@@ -1072,7 +1147,7 @@ export default function App() {
                       value={contactForm.message}
                       onChange={handleContactChange}
                       placeholder="Tell me what you’re building, or what you’d like to discuss…"
-                      className={`w-full px-3.5 py-2.5 text-sm border-2 border-zinc-900 ${
+                      className={`w-full px-4 py-3 text-sm border-2 border-zinc-900 ${
                         darkMode
                           ? 'bg-zinc-900 text-zinc-100'
                           : 'bg-white text-zinc-900'
@@ -1081,8 +1156,8 @@ export default function App() {
                   </div>
 
                   {submitStatus === 'error' && (
-                    <div className="p-3 bg-rose-100 text-rose-900 border-2 border-zinc-900 text-xs font-bold">
-                      Something went wrong sending via the form. Please email directly at{' '}
+                    <div className="p-3.5 bg-rose-100 text-rose-900 border-2 border-zinc-900 text-xs font-bold">
+                      Something went wrong. Please email me directly at{' '}
                       <a
                         href={`mailto:${PORTFOLIO_DATA.email}`}
                         className="underline"
@@ -1093,26 +1168,28 @@ export default function App() {
                     </div>
                   )}
 
-                  <button
-                    type="submit"
-                    disabled={submitStatus === 'sending'}
-                    className="px-6 py-3 bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] font-display font-extrabold text-sm inline-flex items-center gap-2 hover:translate-x-[1px] hover:translate-y-[1px] transition-transform cursor-pointer disabled:opacity-60 whitespace-nowrap shrink-0"
-                  >
-                    <Send className="w-4 h-4" />
-                    {submitStatus === 'sending'
-                      ? 'Sending…'
-                      : 'Send message →'}
-                  </button>
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={submitStatus === 'sending'}
+                      className="px-7 py-3.5 bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[4px_4px_0px_0px_#18181b] font-display font-extrabold text-sm inline-flex items-center gap-2 hover:translate-x-[1px] hover:translate-y-[1px] transition-transform cursor-pointer disabled:opacity-60 whitespace-nowrap shrink-0"
+                    >
+                      <Send className="w-4 h-4" />
+                      {submitStatus === 'sending'
+                        ? 'Sending…'
+                        : 'Send message →'}
+                    </button>
+                  </div>
                 </form>
               )}
             </div>
-          </div>
+          </motion.div>
         </section>
       </main>
 
-      {/* FOOTER (Exact match to Frame 00:14) */}
+      {/* FOOTER (Exact match to Frame 00:14 with tested programmatic scroll buttons) */}
       <footer
-        className={`border-t-2 border-zinc-900 py-10 px-4 sm:px-8 ${
+        className={`border-t-2 border-zinc-900 py-12 px-4 sm:px-8 ${
           darkMode ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'
         }`}
       >
@@ -1134,30 +1211,34 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap items-center gap-6">
-            <a
-              href="#home"
-              className="text-xs font-bold hover:underline whitespace-nowrap shrink-0"
+            <button
+              type="button"
+              onClick={() => scrollToSection('top')}
+              className="text-xs font-bold hover:underline whitespace-nowrap shrink-0 cursor-pointer"
             >
               Home
-            </a>
-            <a
-              href="#about"
-              className="text-xs font-bold hover:underline whitespace-nowrap shrink-0"
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('about')}
+              className="text-xs font-bold hover:underline whitespace-nowrap shrink-0 cursor-pointer"
             >
               About
-            </a>
-            <a
-              href="#journey"
-              className="text-xs font-bold hover:underline whitespace-nowrap shrink-0"
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('journey')}
+              className="text-xs font-bold hover:underline whitespace-nowrap shrink-0 cursor-pointer"
             >
               Experience
-            </a>
-            <a
-              href="#skills"
-              className="text-xs font-bold hover:underline whitespace-nowrap shrink-0"
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection('skills')}
+              className="text-xs font-bold hover:underline whitespace-nowrap shrink-0 cursor-pointer"
             >
               Skills
-            </a>
+            </button>
             <a
               href={PORTFOLIO_DATA.linkedin}
               target="_blank"
@@ -1166,119 +1247,147 @@ export default function App() {
             >
               LinkedIn
             </a>
-            <a
-              href="#home"
-              className="px-4 py-2 bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] font-display font-extrabold text-xs inline-flex items-center gap-1.5 hover:-translate-y-0.5 transition-transform whitespace-nowrap shrink-0"
+            <button
+              type="button"
+              onClick={() => scrollToSection('top')}
+              className="px-4 py-2.5 bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] font-display font-extrabold text-xs inline-flex items-center gap-1.5 hover:-translate-y-0.5 transition-transform whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <ArrowUp className="w-3.5 h-3.5" />
+              <ArrowUp className="w-4 h-4" />
               To top
-            </a>
+            </button>
           </div>
         </div>
       </footer>
 
-      {/* PROJECT CASE STUDY LIGHTBOX MODAL */}
-      {selectedProject && (
-        <div
-          className="fixed inset-0 z-50 bg-zinc-950/75 flex items-center justify-center p-4 overflow-y-auto"
-          role="dialog"
-          aria-modal="true"
+      {/* FLOATING UP / DOWN SECTION NAVIGATOR */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={handleScrollUp}
+          aria-label="Scroll Up"
+          title="Scroll Up / To Top"
+          className="w-11 h-11 bg-[#FDE047] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] flex items-center justify-center hover:-translate-y-0.5 active:translate-y-0 transition-transform cursor-pointer"
         >
-          <div
-            className={`w-full max-w-3xl border-3 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] overflow-hidden my-8 ${
-              darkMode
-                ? 'bg-zinc-900 text-zinc-100'
-                : 'bg-[#FFFDF7] text-zinc-900'
-            }`}
+          <ArrowUp className="w-5 h-5" />
+        </button>
+        <button
+          type="button"
+          onClick={handleScrollDown}
+          aria-label="Scroll Down"
+          title="Scroll Down to Next Section"
+          className="w-11 h-11 bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] flex items-center justify-center hover:translate-y-0.5 active:translate-y-0 transition-transform cursor-pointer"
+        >
+          <ArrowDown className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* PROJECT CASE STUDY LIGHTBOX MODAL */}
+      <AnimatePresence>
+        {selectedProject && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-zinc-950/75 flex items-center justify-center p-4 overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
           >
-            <div
-              className={`${selectedProject.headerColor} text-zinc-900 border-b-2 border-zinc-900 px-6 py-4 flex items-center justify-between gap-4`}
+            <motion.div
+              initial={{ scale: 0.95, y: 12 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 12 }}
+              className={`w-full max-w-3xl border-3 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] overflow-hidden my-8 ${
+                darkMode
+                  ? 'bg-zinc-900 text-zinc-100'
+                  : 'bg-[#FFFDF7] text-zinc-900'
+              }`}
             >
-              <div>
-                <div className="text-xs font-mono font-bold">
-                  {selectedProject.number} · {selectedProject.period}
-                </div>
-                <h3 className="text-xl font-display font-extrabold">
-                  {selectedProject.title}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedProject(null)}
-                aria-label="Close case study modal"
-                className="p-1.5 bg-white border-2 border-zinc-900 shadow-[2px_2px_0px_0px_#18181b] cursor-pointer"
+              <div
+                className={`${selectedProject.headerColor} text-zinc-900 border-b-2 border-zinc-900 px-6 py-4 flex items-center justify-between gap-4`}
               >
-                <X className="w-4 h-4 text-zinc-900" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {selectedProject.metrics.map((m) => (
-                  <div
-                    key={m.label}
-                    className={`p-3 border-2 border-zinc-900 ${
-                      darkMode ? 'bg-zinc-800' : 'bg-white'
-                    }`}
-                  >
-                    <div className="text-lg font-display font-extrabold tabular-nums">
-                      {m.value}
-                    </div>
-                    <div className="text-xs opacity-75">{m.label}</div>
+                <div>
+                  <div className="text-xs font-mono font-bold">
+                    {selectedProject.number} · {selectedProject.period}
                   </div>
-                ))}
-              </div>
-
-              <div>
-                <h4 className="font-display font-extrabold text-base mb-2">
-                  Architectural Overview
-                </h4>
-                <p
-                  className={`text-sm leading-relaxed ${
-                    darkMode ? 'text-zinc-300' : 'text-zinc-700'
-                  }`}
-                >
-                  {selectedProject.deepDive}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-display font-extrabold text-base mb-2">
-                  Key Production Engineering Highlights
-                </h4>
-                <ul className="space-y-2">
-                  {selectedProject.architectureHighlights.map((hl, i) => (
-                    <li
-                      key={i}
-                      className="text-sm flex items-start gap-2"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span>{hl}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="pt-4 border-t-2 border-zinc-900 flex flex-wrap items-center justify-between gap-4">
-                <div className="text-xs font-mono">
-                  Stack: {selectedProject.stack.join(' · ')}
+                  <h3 className="text-xl font-display font-extrabold">
+                    {selectedProject.title}
+                  </h3>
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    const title = selectedProject.title;
-                    setSelectedProject(null);
-                    handlePrefillTopic(title);
-                  }}
-                  className="px-4 py-2 bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] font-bold text-xs cursor-pointer"
+                  onClick={() => setSelectedProject(null)}
+                  aria-label="Close case study modal"
+                  className="p-1.5 bg-white border-2 border-zinc-900 shadow-[2px_2px_0px_0px_#18181b] cursor-pointer"
                 >
-                  Discuss Similar Architecture →
+                  <X className="w-4 h-4 text-zinc-900" />
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+
+              <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {selectedProject.metrics.map((m) => (
+                    <div
+                      key={m.label}
+                      className={`p-3 border-2 border-zinc-900 ${
+                        darkMode ? 'bg-zinc-800' : 'bg-white'
+                      }`}
+                    >
+                      <div className="text-lg font-display font-extrabold tabular-nums">
+                        {m.value}
+                      </div>
+                      <div className="text-xs opacity-75">{m.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div>
+                  <h4 className="font-display font-extrabold text-base mb-2">
+                    Architectural Overview
+                  </h4>
+                  <p
+                    className={`text-sm leading-relaxed ${
+                      darkMode ? 'text-zinc-300' : 'text-zinc-700'
+                    }`}
+                  >
+                    {selectedProject.deepDive}
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-display font-extrabold text-base mb-2">
+                    Key Production Engineering Highlights
+                  </h4>
+                  <ul className="space-y-2">
+                    {selectedProject.architectureHighlights.map((hl, i) => (
+                      <li key={i} className="text-sm flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                        <span>{hl}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-4 border-t-2 border-zinc-900 flex flex-wrap items-center justify-between gap-4">
+                  <div className="text-xs font-mono">
+                    Stack: {selectedProject.stack.join(' · ')}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const title = selectedProject.title;
+                      setSelectedProject(null);
+                      handlePrefillTopic(title);
+                    }}
+                    className="px-4 py-2 bg-[#67E8F9] text-zinc-900 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] font-bold text-xs cursor-pointer"
+                  >
+                    Discuss Similar Architecture →
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
