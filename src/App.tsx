@@ -128,33 +128,67 @@ export default function App() {
     setContactForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const focusContactForm = () => {
+    scrollToSection('contact-form');
+    setTimeout(() => {
+      const nameInput = document.getElementById('name');
+      if (nameInput) nameInput.focus();
+    }, 350);
+  };
+
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !contactForm.name.trim() ||
-      !contactForm.email.trim() ||
-      !contactForm.message.trim()
-    ) {
+    const senderName = contactForm.name.trim();
+    const senderEmail = contactForm.email.trim();
+    const senderCompany = contactForm.company.trim();
+    const rawMessage = contactForm.message.trim();
+
+    if (!senderName || !senderEmail || !rawMessage) {
       return;
     }
 
     setSubmitStatus('sending');
+    const relayPayload = {
+      name: senderName,
+      email: senderEmail,
+      company: senderCompany,
+      message: rawMessage,
+    };
+
+    const directFormspreePayload = {
+      name: senderName,
+      email: senderEmail,
+      _replyto: senderEmail,
+      reply_to_email: senderEmail,
+      company: senderCompany,
+      _subject: `Portfolio Inquiry from ${senderName} (${senderEmail})`,
+      message: `Sender Name: ${senderName}\nSender Gmail / Email: ${senderEmail}${
+        senderCompany ? `\nCompany: ${senderCompany}` : ''
+      }\n\nMessage:\n${rawMessage}`,
+    };
+
     try {
-      const response = await fetch(PORTFOLIO_DATA.formspreeEndpoint, {
+      // Primary: server-side relay with ashokkunchala.com Origin/Referer headers
+      let response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({
-          name: contactForm.name,
-          email: contactForm.email,
-          company: contactForm.company,
-          message: contactForm.message,
-          _replyto: contactForm.email,
-          _subject: `Correspondence for ${PORTFOLIO_DATA.email} from ${contactForm.name}`,
-        }),
+        body: JSON.stringify(relayPayload),
       });
+
+      // Fallback: direct Formspree call if running in static environment
+      if (!response.ok) {
+        response = await fetch(PORTFOLIO_DATA.formspreeEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(directFormspreePayload),
+        });
+      }
 
       if (response.ok) {
         setSubmitStatus('sent');
@@ -163,7 +197,24 @@ export default function App() {
         setSubmitStatus('error');
       }
     } catch {
-      setSubmitStatus('error');
+      try {
+        const fallbackRes = await fetch(PORTFOLIO_DATA.formspreeEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(directFormspreePayload),
+        });
+        if (fallbackRes.ok) {
+          setSubmitStatus('sent');
+          setContactForm({ name: '', email: '', company: '', message: '' });
+        } else {
+          setSubmitStatus('error');
+        }
+      } catch {
+        setSubmitStatus('error');
+      }
     }
   };
 
@@ -174,7 +225,7 @@ export default function App() {
         ? prev.message
         : `Hi Ashok, I'd like to discuss ${topicPrefix}. `,
     }));
-    scrollToSection('contact-form');
+    focusContactForm();
   };
 
   const getCategoryIcon = (
@@ -376,7 +427,7 @@ export default function App() {
 
                   <button
                     type="button"
-                    onClick={() => scrollToSection('contact-form')}
+                    onClick={focusContactForm}
                     aria-label="Send Direct Correspondence"
                     title="Send Direct Message"
                     className={`w-12 h-12 border-2 border-zinc-900 shadow-[3px_3px_0px_0px_#18181b] flex items-center justify-center hover:-translate-y-0.5 transition-transform cursor-pointer ${
@@ -997,7 +1048,7 @@ export default function App() {
               {/* Sticky Note 3: Pink Send Message Form */}
               <button
                 type="button"
-                onClick={() => scrollToSection('contact-form')}
+                onClick={focusContactForm}
                 className="relative bg-[#F472B6] text-zinc-900 border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-8 flex flex-col items-center justify-center text-center -rotate-1 hover:rotate-0 hover:-translate-y-1 transition-all cursor-pointer"
               >
                 <span
