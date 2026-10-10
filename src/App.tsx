@@ -331,10 +331,7 @@ export default function App() {
         <section className="pt-10 pb-16 md:pt-16 md:pb-24 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
             {/* Left Column: Kicker, Display Headline, Bio, Official Links, Get in Touch & Coffee Chat */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
+            <div
               className={`lg:col-span-7 border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-7 sm:p-12 flex flex-col justify-between ${
                 darkMode ? 'bg-[#1F212A]' : 'bg-white'
               }`}
@@ -487,13 +484,10 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Right Column: Ashok's Uploaded Portrait AS-IS with Neo-Brutalist Stickers (Matching 00:01 - 00:03) */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.06 }}
+            <div
               className={`lg:col-span-5 border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-7 sm:p-10 flex flex-col items-center justify-between relative overflow-hidden ${
                 darkMode ? 'bg-[#1F212A]' : 'bg-[#F4FBF9]'
               }`}
@@ -543,14 +537,11 @@ export default function App() {
               >
                 Full Stack &amp; AI Mode
               </button>
-            </motion.div>
+            </div>
           </div>
 
           {/* Interactive Tech Stack Marquee Bar (Exact match to Frame 00:04) */}
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.12 }}
+          <div
             className={`mt-10 border-2 border-zinc-900 shadow-[5px_5px_0px_0px_#18181b] py-4 px-5 overflow-hidden ${
               darkMode ? 'bg-[#1F212A]' : 'bg-white'
             }`}
@@ -580,7 +571,7 @@ export default function App() {
                 );
               })}
             </div>
-          </motion.div>
+          </div>
         </section>
 
         {/* ABOUT SECTION (Spacious Exact UI from Frame 00:05 with Neo-Brutalist Inline Colored Highlights) */}
@@ -588,11 +579,7 @@ export default function App() {
           id="about"
           className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto scroll-mt-20"
         >
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.35 }}
+          <div
             className={`relative border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-8 sm:p-14 ${
               darkMode
                 ? 'bg-[#1F212A] text-zinc-100'
@@ -688,7 +675,7 @@ export default function App() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </section>
 
         {/* MY JOURNEY — Interactive Treasure Map & Career Timeline (Frames 00:06 - 00:09) */}
@@ -734,13 +721,9 @@ export default function App() {
 
           {/* 3-Column Neo-Brutalist Category Cards Grid (Exact match to 00:10 - 00:12) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {PORTFOLIO_DATA.skillCategories.map((cat, idx) => (
-              <motion.div
+            {PORTFOLIO_DATA.skillCategories.map((cat) => (
+              <div
                 key={cat.id}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.3, delay: idx * 0.05 }}
                 className={`border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] flex flex-col ${
                   darkMode ? 'bg-[#1F212A]' : 'bg-white'
                 }`}
@@ -781,7 +764,7 @@ export default function App() {
                     );
                   })}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </section>
@@ -791,11 +774,7 @@ export default function App() {
           id="work"
           className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto scroll-mt-20"
         >
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.35 }}
+          <div
             className={`border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-8 sm:p-12 ${
               darkMode ? 'bg-[#1F212A]' : 'bg-white'
             }`}
@@ -857,18 +836,14 @@ export default function App() {
                 </article>
               ))}
             </div>
-          </motion.div>
+          </div>
         </section>
 
         {/* CREDENTIALS & LANGUAGES SPLIT (Exact UI from Frame 00:13) */}
         <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
             {/* Left Card: CREDENTIALS & RECOGNITION */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.35 }}
+            <div
               className={`border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-7 sm:p-10 ${
                 darkMode ? 'bg-[#1F212A]' : 'bg-white'
               }`}
@@ -910,14 +885,10 @@ export default function App() {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
             {/* Right Card: LANGUAGES & GLOBAL DELIVERY (Matching Frame 00:13) */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.35, delay: 0.08 }}
+            <div
               className={`border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] p-7 sm:p-10 ${
                 darkMode ? 'bg-[#1F212A]' : 'bg-white'
               }`}
@@ -967,7 +938,7 @@ export default function App() {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
@@ -976,11 +947,7 @@ export default function App() {
           id="contact"
           className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto scroll-mt-20"
         >
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.35 }}
+          <div
             className={`border-2 border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] p-8 sm:p-14 ${
               darkMode ? 'bg-[#1F212A]' : 'bg-white'
             }`}
@@ -1234,7 +1201,7 @@ export default function App() {
                 </form>
               )}
             </div>
-          </motion.div>
+          </div>
         </section>
       </main>
 

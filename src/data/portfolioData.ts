@@ -1,3 +1,7 @@
+import avatarImg from '../assets/images/ashok-original.png';
+import pirateCaptainImg from '../assets/images/pirate_captain_exact_closeup_1791562916506.jpg';
+import treasureMapImg from '../assets/images/clean_cartography_map_1791561042011.jpg';
+
 export interface LocationPoint {
   id: 'hyderabad' | 'usa' | 'australia' | 'emea';
   name: string;
@@ -58,9 +62,9 @@ export interface FeaturedProject {
 }
 
 export const ASHOK_IMAGES = {
-  avatar: '/src/assets/images/ashok-original.png',
-  pirateCaptain: '/src/assets/images/pirate_captain_exact_closeup_1791562916506.jpg',
-  treasureMap: '/src/assets/images/clean_cartography_map_1791561042011.jpg',
+  avatar: avatarImg,
+  pirateCaptain: pirateCaptainImg,
+  treasureMap: treasureMapImg,
 };
 
 export const PORTFOLIO_DATA = {

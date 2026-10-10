@@ -169,11 +169,7 @@ export const JourneyTreasureMap: React.FC<JourneyTreasureMapProps> = ({
       className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-[1280px] mx-auto scroll-mt-20"
     >
       {/* Top Banner matching Frame 00:06 "My Journey" Neo-Brutalist Box */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-60px' }}
-        transition={{ duration: 0.35 }}
+      <div
         className={`border-2 border-zinc-900 shadow-[6px_6px_0px_0px_#18181b] px-6 py-5 mb-10 flex flex-wrap items-center justify-between gap-4 ${
           darkMode ? 'bg-[#1F212A] text-zinc-100' : 'bg-white text-zinc-900'
         }`}
@@ -230,7 +226,7 @@ export const JourneyTreasureMap: React.FC<JourneyTreasureMapProps> = ({
             )}
           </button>
         </div>
-      </motion.div>
+      </div>
 
       <AnimatePresence mode="wait">
         {/* Folded Vintage Map Book View (from Frame 00:06) */}
